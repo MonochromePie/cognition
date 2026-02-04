@@ -90,3 +90,47 @@ def oklab_to_rgb(lab):
     rgb = np.round(rgb).astype(np.uint8)
     
     return rgb
+
+# From https://gist.github.com/dkaraush/65d19d61396f5f3cd8ba7d1b4b3c9432
+def oklab_to_oklch(lab):
+    """Convert Oklab (L, a, b) to Oklch (L, c, h_degrees)
+    """
+    lab = np.asarray(lab, dtype=np.float64)
+
+    L = lab[..., 0]
+    a = lab[..., 1]
+    b = lab[..., 2]
+
+    c = np.sqrt(a**2 + b**2)
+    h = np.degrees(np.arctan2(b, a))
+    h = np.mod(h, 360.0)
+
+    neutral = (np.abs(a) < 0.0002) & (np.abs(b) < 0.0002)
+    h = np.where(neutral, 0, h)
+
+    return np.stack([L, c, h], axis=-1)
+
+
+def oklch_to_oklab(lch):
+    """Convert Oklch (L, c, h_degrees) to Oklab (L, a, b)
+    """
+    lch = np.asarray(lch, dtype=np.float64)
+
+    L = lch[..., 0]
+    c = lch[..., 1]
+    h = lch[..., 2]
+
+    h_rad = np.deg2rad(h)
+
+    a = c * np.cos(h_rad)
+    b = c * np.sin(h_rad)
+
+    return np.stack([L, a, b], axis=-1)
+
+def rgb_to_oklch(rgb):
+    oklab = rgb_to_oklab(rgb)
+    return oklab_to_oklch(oklab)
+
+def oklch_to_rgb(lch):
+    oklab = oklch_to_oklab(lch)
+    return oklab_to_rgb(oklab)

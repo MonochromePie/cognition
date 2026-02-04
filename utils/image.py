@@ -1,3 +1,4 @@
+from typing import Literal
 import numpy as np
 import skimage as sk
 
@@ -11,6 +12,13 @@ SOBEL_KERNEL_Y = np.array([
     [0, 0, 0],
     [1, 2, 1]
 ])
+
+def rgb_to_gray(image):
+    if image.ndim != 3:
+        return image
+    image = image.astype(np.float64) / 255
+    dot_product = np.dot(image, [0.299, 0.587, 0.114])
+    return (dot_product * 255).astype(np.uint8)
 
 def read_image(path):
     return sk.io.imread(path)
@@ -74,8 +82,19 @@ def gaussian_blur(image, iterations=1):
         image = convolution(image, kernel)
     return image
 
-def sobel_edge_detection(image):
-    image = image.astype(np.float64) / 255
+def sobel_filter(image, mode: Literal['magnitude', 'maximum'] = 'magnitude'):
+    if image.dtype == 'uint8':
+        image = image.astype(np.float64) / 255
     sobel_x = convolution(image, SOBEL_KERNEL_X)
     sobel_y = convolution(image, SOBEL_KERNEL_Y)
-    return np.sqrt(sobel_x**2 + sobel_y**2).astype(np.uint8) * 255
+    magnitude = np.sqrt(sobel_x**2 + sobel_y**2)
+    if mode == 'magnitude':
+        return (np.mean(magnitude, axis=-1) * 255).astype(np.uint8)
+    elif mode == 'maximum':
+        # Maximum magnitude across color channels
+        return (np.max(magnitude, axis=-1) * 255).astype(np.uint8)
+
+def image_to_binary(image, threshold=0.5):
+    if image.dtype == 'uint8':
+        image = image.astype(np.float64) / 255
+    return (image > threshold).astype(np.uint8) * 255

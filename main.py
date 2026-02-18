@@ -1,3 +1,5 @@
+from email import utils
+from utils import optical_flow
 from utils.image import (
     gaussian_blur,
     read_image,
@@ -7,7 +9,9 @@ from utils.image import (
 )
 from utils.color_space import rgb_to_oklch
 from utils.blob import blobize, group_blobs
+from utils.optical_flow import optical_flow_vector, optical_flow_magnitude, plot_optical_flow, optical_flow_pyramid
 import time
+import numpy as np
 
 def find_gradient(image):
     blurred_image = gaussian_blur(image, 5)
@@ -32,10 +36,35 @@ def main():
     gradient_image2 = find_gradient(image2)
     blobs2 = blobize(image2, gradient_image2)
     groups = group_blobs(blobs1, blobs2)
-    end_time = time.time()
-    print(f"Time taken: {end_time - start_time} seconds")
     for i, group in enumerate(groups):
         write_image(f"outputs/group_{i}.png", group[0])
         write_image(f"outputs/group_{i}_pair.png", group[1])
+
+
+    test1 = read_image("test\small_step_1.jpg")
+    test1 = resize_image(test1, 100, 75)
+
+    test2 = read_image("test\small_step_2.jpg")
+    test2 = resize_image(test2, 100, 75)
+
+    print(False in (test1 == test2))
+
+    #optical flow
+    vector_field = optical_flow_pyramid(test1, test2, levels=1, initial_kernel_size=3, blur_iterations=1, eig_thresh=1e-4)
+
+    vector_field_direction = optical_flow_vector( vector_field)
+    magnitude = optical_flow_magnitude(vector_field)
+
+    #stop time
+    end_time = time.time()
+    print(f"Time taken: {end_time - start_time} seconds")
+
+    #plot optical flow magnitude
+    print(f"Max magnitude location: {np.where(magnitude == np.max(magnitude))}")
+    print(f"Optical Flow Vector Field Direction: {vector_field_direction}")
+    write_image("outputs/test_1_re.png", gaussian_blur(test1))
+    write_image("outputs/test_2_re.png", gaussian_blur(test2))
+    plot_optical_flow(vector_field, step=1, background=test1)
+    
 if __name__ == "__main__":
     main()

@@ -50,7 +50,7 @@ def main():
     print(False in (test1 == test2))
 
     #optical flow
-    vector_field = optical_flow_pyramid(test1, test2, levels=1, initial_kernel_size=3, blur_iterations=1, eig_thresh=1e-4)
+    vector_field = optical_flow_pyramid(test1, test2, levels=3, initial_kernel_size=3, blur_iterations=0, eig_thresh=1e-4)
 
     vector_field_direction = optical_flow_vector( vector_field)
     magnitude = optical_flow_magnitude(vector_field)

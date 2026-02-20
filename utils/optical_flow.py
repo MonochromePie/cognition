@@ -26,7 +26,7 @@ def image_to_binary32(image, threshold=0.5):
     image = image / 255.0
     return (image > threshold).astype(np.float32) * 255.0
 
-def optical_flow_vector_field(img_1, img_2, kernel_size=5, blur_iterations=1, eig_thresh = 1e-2):
+def optical_flow_vector_field(img_1, img_2, kernel_size=5, blur_iterations=1, eig_thresh = 1e-4):
     if img_1.shape != img_2.shape:
         raise ValueError("Input images must have the same dimensions.")    
     
@@ -51,10 +51,10 @@ def optical_flow_vector_field(img_1, img_2, kernel_size=5, blur_iterations=1, ei
     padded_image_1 = pad_image(img_1, kernel_size)
     padded_image_2 = pad_image(img_2, kernel_size)
     
-    IDENTITY_KERNEL = np.array([[1]])
+    
 
-    Ix_array = image.convolution(padded_image_1, IDENTITY_KERNEL)
-    Iy_array = image.convolution(padded_image_1, IDENTITY_KERNEL)
+    Ix_array = image.convolution(padded_image_1, image.SOBEL_KERNEL_X)
+    Iy_array = image.convolution(padded_image_1, image.SOBEL_KERNEL_Y)
     It_array = padded_image_2 - padded_image_1
 
     for i in range(optical_flow_vector_field.shape[0]):

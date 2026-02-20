@@ -95,7 +95,10 @@ def optical_flow_magnitude(flow_vector_field):
     magnitude = np.sqrt(flow_vector_field[..., 0, 0]**2 + flow_vector_field[..., 1, 0]**2)
     return magnitude
 
-def optical_flow_pyramid(img_1, img_2, levels=3, initial_kernel_size=3, blur_iterations=1, eig_thresh = 1e-2):
+def optical_flow_pyramid(img_1, img_2, levels=3, initial_kernel_size=3,res=(100,75) ,blur_iterations=1, eig_thresh = 1e-2):
+
+    img_1 = image.resize_image(img_1, res[0], res[1])
+    img_2 = image.resize_image(img_2, res[0], res[1])
 
     h, w = img_1.shape[0], img_1.shape[1]
     flow_pyramid = np.zeros((h, w, 2, 1), dtype=np.float32)
